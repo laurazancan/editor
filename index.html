@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paint 3D Clone</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background-color: #f0f0f0;
+    }
+    canvas {
+        border: 1px solid #000;
+        cursor: crosshair;
+    }
+    #controls {
+        margin-top: 20px;
+    }
+</style>
+</head>
+<body>
+<canvas id="canvas" width="800" height="600"></canvas>
+<div id="controls">
+    <input type="color" id="colorPicker" value="#000000">
+    <input type="range" id="sizeSlider" min="1" max="20" value="3">
+    <button id="brushButton">Brush</button>
+    <button id="eraserButton">Eraser</button>
+    <button id="clearButton">Clear Canvas</button>
+    <button id="saveButton">Save Image</button>
+</div>
+<script>
+    window.onload = function() {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const colorPicker = document.getElementById('colorPicker');
+        const sizeSlider = document.getElementById('sizeSlider');
+        const brushButton = document.getElementById('brushButton');
+        const eraserButton = document.getElementById('eraserButton');
+        const clearButton = document.getElementById('clearButton');
+        const saveButton = document.getElementById('saveButton');
+
+        let isDrawing = false;
+        let isErasing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        });
+
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', () => isDrawing = false);
+        canvas.addEventListener('mouseout', () => isDrawing = false);
+
+        function draw(e) {
+            if (!isDrawing) return;
+            let currentX = e.offsetX;
+            let currentY = e.offsetY;
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(currentX, currentY);
+            if (isErasing) {
+                ctx.strokeStyle = '#fff'; // white color to act as eraser
+            } else {
+                ctx.strokeStyle = colorPicker.value;
+            }
+            ctx.lineWidth = sizeSlider.value;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            [lastX, lastY] = [currentX, currentY];
+        }
+
+        brushButton.addEventListener('click', () => {
+            isErasing = false;
+        });
+
+        eraserButton.addEventListener('click', () => {
+            isErasing = true;
+        });
+
+        clearButton.addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+        saveButton.addEventListener('click', () => {
+            const url = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'painting.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+    };
+</script>
+</body>
+</html>
